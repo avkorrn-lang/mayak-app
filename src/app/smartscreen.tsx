@@ -23,7 +23,7 @@ const techniques: Technique[] = [
     finalMessage: 'Взгляните на таблицу: что перевешивает? Помогает ли это поведение в долгосрочной перспективе?',
   },
   {
-    id: 'disarm', title: 'Осада деструктивных образов (DISARM)',
+    id: 'disarm', title: 'Осадда деструктивных образов (DISARM)',
     when: 'Когда вас атакуют навязчивые мысленные образы или картины (катастрофические фантазии).',
     desc: 'Противодействуйте навязчивым образам, рассматривая их как рекламу, которую не обязательно покупать.',
     fields: ['Опишите навязчивый образ.', 'Какие чувства он вызывает?', 'Представьте, что этот образ — просто реклама. Хотите ли вы её «купить»?', 'Чем заменить этот образ? Придумайте позитивную альтернативу.'],
@@ -37,14 +37,6 @@ const techniques: Technique[] = [
     fields: ['За что я себя сейчас осуждаю?', 'Какие качества или поступки вызывают стыд?', 'Могу ли я отделить поступки от своей ценности как человека?', 'Сформулируйте утверждение: «Я принимаю себя полностью, даже если...»'],
     examples: ['Например: за прокрастинацию', 'Считаю себя ленивым', 'Лень — поведение, а не личность', '«Я принимаю себя полностью, даже если иногда прокрастинирую»'],
     finalMessage: 'Принятие себя не означает одобрение поступков, но даёт опору для изменений.',
-  },
-  {
-    id: 'deads', title: 'Остановись и переключись (ТРУД)',
-    when: 'Применяется при очень сильном гневе, панике, непреодолимых импульсах.',
-    desc: 'Пошаговая инструкция для быстрого сброса напряжения.',
-    fields: [],
-    examples: [],
-    finalMessage: '',
   },
 ];
 
@@ -74,32 +66,6 @@ export default function SmartScreen() {
   const handleClose = () => { setSelected(null); setCurrentStep(0); setAnswers([]); setCompleted(false); };
 
   if (selected) {
-    if (selected.id === 'deads') {
-      return (
-        <Background>
-          <SafeAreaView style={styles.safe}>
-            <ScrollView contentContainerStyle={styles.scroll}>
-              <Text style={[Fonts.title, { color: colors.text }]}>{selected.title}</Text>
-              <Text style={[styles.when, { color: colors.accent }]}>Когда применять: {selected.when}</Text>
-              <Text style={[styles.desc, { color: colors.textSecondary }]}>{selected.desc}</Text>
-              <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-                <Text style={[styles.stepTitle, { color: colors.text }]}>Шаг 1: Стоп!</Text>
-                <Text style={[styles.instruction, { color: colors.textSecondary }]}>Громко скажите себе «Стоп!» или хлопните в ладоши. Прервите автоматическую реакцию.</Text>
-                <Text style={[styles.stepTitle, { color: colors.text }]}>Шаг 2: Осознайте</Text>
-                <Text style={[styles.instruction, { color: colors.textSecondary }]}>Что сейчас происходит? Какая эмоция вас захлестнула? Назовите её про себя.</Text>
-                <Text style={[styles.stepTitle, { color: colors.text }]}>Шаг 3: Сделайте паузу</Text>
-                <Text style={[styles.instruction, { color: colors.textSecondary }]}>Умойтесь ледяной водой, выйдите в другую комнату или на свежий воздух. Смените обстановку на 1–2 минуты.</Text>
-                <Text style={[styles.stepTitle, { color: colors.text }]}>Шаг 4: Переключитесь</Text>
-                <Text style={[styles.instruction, { color: colors.textSecondary }]}>Займите руки или голову чем‑то нейтральным: посчитайте предметы вокруг, включите музыку, сделайте 10 приседаний.</Text>
-                <Text style={[styles.final, { color: colors.accent }]}>Вы справились с острым импульсом. Теперь можно вернуться к ситуации более осознанно.</Text>
-                <StyledButton title="Понятно" onPress={handleClose} />
-              </View>
-            </ScrollView>
-          </SafeAreaView>
-        </Background>
-      );
-    }
-
     const total = selected.fields.length;
     return (
       <Background>
