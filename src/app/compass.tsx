@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import Background from '../components/Background';
 import StyledButton from '../components/StyledButton';
 import { useThemeColors, Fonts, Spacing } from '../theme';
@@ -21,14 +22,14 @@ const SYMPTOMS = [
 ];
 
 const EMOTIONS = [
-  { label: 'Страх', icon: '😨', color: '#7B8FA1' },
-  { label: 'Гнев', icon: '😠', color: '#C44F4F' },
-  { label: 'Грусть', icon: '😢', color: '#5B7FA5' },
-  { label: 'Стыд', icon: '😳', color: '#B57B6B' },
-  { label: 'Вина', icon: '😞', color: '#8B6B84' },
-  { label: 'Отвращение', icon: '🤢', color: '#6B8B5B' },
-  { label: 'Радость', icon: '😊', color: '#4F9F6E' },
-  { label: 'Любовь', icon: '❤️', color: '#C44F7F' },
+  { label: 'Страх (тревога, паника, ужас)', icon: '😨' },
+  { label: 'Гнев (раздражение, злость, ярость)', icon: '😠' },
+  { label: 'Грусть (печаль, тоска, скорбь)', icon: '😢' },
+  { label: 'Стыд (смущение, унижение)', icon: '😳' },
+  { label: 'Вина (сожаление, раскаяние)', icon: '😞' },
+  { label: 'Отвращение (неприязнь, омерзение)', icon: '🤢' },
+  { label: 'Радость (удовольствие, счастье, восторг)', icon: '😊' },
+  { label: 'Любовь (нежность, привязанность)', icon: '❤️' },
 ];
 
 const URGES = [
@@ -40,7 +41,23 @@ const URGES = [
   'Ничего не хочется, я в порядке',
 ];
 
-// Связи эмоций, симптомов и техник (упрощённая модель, можно доработать с психотерапевтом)
+
+const TECHNIQUE_ID_MAP: Record<string, string> = {
+  'Проверка фактов': 'factcheck',
+  'Противоположное действие': 'opposite',
+  'Радикальное принятие': 'radical',
+  'Безусловное самопринятие': 'usa',
+  'Серфинг эмоций': 'surf',
+  'Осадда деструктивных образов (DISARM)': 'disarm',
+  'Анализ выгод и издержек': 'cba',
+  'Самоуспокоение через 5 чувств': 'senses',
+  'Улучшение момента': 'improve',
+  'Отвлечение': 'distract',
+  'Полуулыбка': 'halfsmile',
+  'STOP': 'stop',
+  'ТРУД': 'trud',
+};
+
 const TECHNIQUE_LINKS: Record<string, string[]> = {
   'Страх': ['Проверка фактов', 'Радикальное принятие'],
   'Гнев': ['STOP', 'Противоположное действие'],
@@ -52,17 +69,6 @@ const TECHNIQUE_LINKS: Record<string, string[]> = {
   'Любовь': ['Накопление положительных эмоций'],
 };
 
-const TECHNIQUE_DETAILS: Record<string, { section: string; router: string | null }> = {
-  'Проверка фактов': { section: 'СМАРТ (скоро появится)', router: null },
-  'Противоположное действие': { section: 'СМАРТ (скоро появится)', router: null },
-  'STOP': { section: 'Бухта → Ритуалы (скоро появится)', router: null },
-  'Радикальное принятие': { section: 'Бухта → Ритуалы', router: '/harbor' },
-  'Безусловное самопринятие': { section: 'СМАРТ → Техника «Безусловное самопринятие»', router: '/smartscreen' },
-  'Полуулыбка': { section: 'Бухта → Ритуалы', router: '/harbor' },
-  'Самоуспокоение через 5 чувств': { section: 'Бухта → Ритуалы', router: '/harbor' },
-  'Накопление положительных эмоций': { section: 'Бухта → Ритуалы (скоро появится)', router: null },
-};
-
 function getLevel(value: number) {
   if (value <= 40) return { level: 'green', title: 'Решать', subtitle: '0–40% · Я могу мыслить', icon: 'lightbulb-on-outline' as const, desc: 'Ваш уровень дистресса невысок. Подойдут навыки когнитивной работы.', color: '#4F9F6E' };
   if (value <= 65) return { level: 'yellow', title: 'Пережить', subtitle: '40–65% · Мне нужно пережить', icon: 'shield-half-full' as const, desc: 'Эмоция мешает ясно мыслить. Лучше использовать навыки перенесения дистресса.', color: '#C9A84C' };
@@ -70,42 +76,33 @@ function getLevel(value: number) {
 }
 
 function getRecommendedTechniques(emotions: string[], level: number): string[] {
-  // Собираем техники, соответствующие выбранным эмоциям
   let techniques: string[] = [];
   emotions.forEach(em => {
     if (TECHNIQUE_LINKS[em]) {
       techniques = techniques.concat(TECHNIQUE_LINKS[em]);
     }
   });
-  // Удаляем дубликаты
   techniques = [...new Set(techniques)];
-  // Фильтруем по уровню: для красного приоритет STOP и ТРУД, для жёлтого – самоуспокоение, отвлечение и т.д.
+
   if (level >= 65) {
-    // Если есть STOP или ТРУД, оставляем их, иначе берём любые из красного списка
     const crisis = techniques.filter(t => ['STOP', 'ТРУД'].includes(t));
-    if (crisis.length > 0) return crisis.slice(0, 2);
-    // fallback: любые техники, но покажем сообщение
-    return ['STOP', 'ТРУД'];
+    return crisis.length > 0 ? crisis.slice(0, 2) : ['STOP', 'ТРУД'];
   } else if (level >= 40) {
-    // Жёлтый: навыки перенесения
     const distress = techniques.filter(t =>
       ['Самоуспокоение через 5 чувств', 'Улучшение момента', 'Отвлечение', 'Полуулыбка'].includes(t)
     );
-    if (distress.length > 0) return distress.slice(0, 2);
-    // Если нет подходящих, предлагаем стандартные
-    return ['Самоуспокоение через 5 чувств', 'Полуулыбка'];
+    return distress.length > 0 ? distress.slice(0, 2) : ['Самоуспокоение через 5 чувств', 'Полуулыбка'];
   } else {
-    // Зелёный: когнитивные техники
     const cognitive = techniques.filter(t =>
       ['Проверка фактов', 'Противоположное действие', 'Решение проблем (ЗА и ПРОТИВ)', 'Радикальное принятие', 'Безусловное самопринятие'].includes(t)
     );
-    if (cognitive.length > 0) return cognitive.slice(0, 2);
-    return ['Безусловное самопринятие', 'Радикальное принятие'];
+    return cognitive.length > 0 ? cognitive.slice(0, 2) : ['Безусловное самопринятие', 'Радикальное принятие'];
   }
 }
 
 export default function CompassScreen() {
   const colors = useThemeColors();
+  const router = useRouter();
   const [step, setStep] = useState<'body' | 'intensity' | 'result'>('body');
   const [selectedSymptoms, setSelectedSymptoms] = useState<number[]>([]);
   const [selectedEmotions, setSelectedEmotions] = useState<number[]>([]);
@@ -114,9 +111,7 @@ export default function CompassScreen() {
 
   const toggleSymptom = (index: number) => {
     setSelectedSymptoms(prev => {
-      if (index === SYMPTOMS.length - 1) {
-        return prev.includes(index) ? [] : [index];
-      }
+      if (index === SYMPTOMS.length - 1) return prev.includes(index) ? [] : [index];
       const withoutNeutral = prev.filter(i => i !== SYMPTOMS.length - 1);
       if (withoutNeutral.includes(index)) return withoutNeutral.filter(i => i !== index);
       return [...withoutNeutral, index];
@@ -124,42 +119,21 @@ export default function CompassScreen() {
   };
 
   const toggleEmotion = (index: number) => {
-    setSelectedEmotions(prev => {
-      if (prev.includes(index)) return prev.filter(i => i !== index);
-      return [...prev, index];
-    });
+    setSelectedEmotions(prev => prev.includes(index) ? prev.filter(i => i !== index) : [...prev, index]);
   };
 
   const toggleUrge = (index: number) => {
     setSelectedUrges(prev => {
-      if (index === URGES.length - 1) {
-        return prev.includes(index) ? [] : [index];
-      }
+      if (index === URGES.length - 1) return prev.includes(index) ? [] : [index];
       const withoutNeutral = prev.filter(i => i !== URGES.length - 1);
       if (withoutNeutral.includes(index)) return withoutNeutral.filter(i => i !== index);
       return [...withoutNeutral, index];
     });
   };
 
-  const handleContinueToIntensity = () => {
-    setStep('intensity');
-  };
-
-  const handleIntensitySelect = (value: number) => {
-    setIntensity(value);
-    setStep('result');
-  };
-
-  const reset = () => {
-    setStep('body');
-    setSelectedSymptoms([]);
-    setSelectedEmotions([]);
-    setSelectedUrges([]);
-    setIntensity(null);
-  };
-
-  const levelInfo = intensity !== null ? getLevel(intensity) : null;
+  const canContinue = selectedSymptoms.length > 0 || selectedEmotions.length > 0 || selectedUrges.length > 0;
   const chosenEmotions = selectedEmotions.map(i => EMOTIONS[i].label);
+  const levelInfo = intensity !== null ? getLevel(intensity) : null;
   const recommended = intensity !== null ? getRecommendedTechniques(chosenEmotions, intensity) : [];
 
   return (
@@ -176,9 +150,8 @@ export default function CompassScreen() {
 
           {step === 'body' && (
             <View style={styles.card}>
-              <Text style={[styles.cardTitle, { color: colors.text }]}>Боди-скан</Text>
 
-              <Text style={[styles.sectionTitle, { color: colors.text }]}>Ощущения в теле</Text>
+              <Text style={styles.invite}>Пройдите вниманием по телу. Что вы замечаете прямо сейчас?</Text>
               {SYMPTOMS.map((s, i) => {
                 const selected = selectedSymptoms.includes(i);
                 return (
@@ -198,7 +171,8 @@ export default function CompassScreen() {
                 );
               })}
 
-              <Text style={[styles.sectionTitle, { color: colors.text, marginTop: Spacing.md }]}>Какие эмоции вы испытываете?</Text>
+              <View style={styles.blockDivider} />
+              <Text style={styles.invite}>🎭 Какие эмоции присутствуют? Можно выбрать несколько.</Text>
               {EMOTIONS.map((em, i) => {
                 const selected = selectedEmotions.includes(i);
                 return (
@@ -220,7 +194,8 @@ export default function CompassScreen() {
                 );
               })}
 
-              <Text style={[styles.sectionTitle, { color: colors.text, marginTop: Spacing.md }]}>Что хочется сделать?</Text>
+              <View style={styles.blockDivider} />
+              <Text style={styles.invite}>💪 Что вам хочется сделать под влиянием этих чувств?</Text>
               {URGES.map((u, i) => {
                 const selected = selectedUrges.includes(i);
                 return (
@@ -240,12 +215,8 @@ export default function CompassScreen() {
                 );
               })}
 
-              <View style={{ marginTop: Spacing.md }}>
-                <StyledButton
-                  title="Продолжить →"
-                  onPress={handleContinueToIntensity}
-                  disabled={selectedSymptoms.length === 0 && selectedEmotions.length === 0 && selectedUrges.length === 0}
-                />
+              <View style={styles.buttonGroup}>
+                <StyledButton title="Продолжить →" onPress={() => setStep('intensity')} disabled={!canContinue} />
                 <TouchableOpacity onPress={() => setStep('intensity')} style={styles.skipBtn}>
                   <Text style={[styles.skipText, { color: colors.textSecondary }]}>Пропустить — быстрая шкала</Text>
                 </TouchableOpacity>
@@ -255,26 +226,26 @@ export default function CompassScreen() {
 
           {step === 'intensity' && (
             <View style={styles.card}>
-              <Text style={[styles.cardTitle, { color: colors.text }]}>Насколько сильна эмоция?</Text>
+              <Text style={[styles.cardTitle, { color: colors.text }]}>📊 Насколько сильна эмоция сейчас?</Text>
               {chosenEmotions.length > 0 && (
                 <Text style={[styles.contextHint, { color: colors.textSecondary }]}>
                   Вы отметили: {chosenEmotions.join(', ').toLowerCase()}
                   {selectedSymptoms.filter(i => i !== SYMPTOMS.length - 1).length > 0 ? ', телесное напряжение' : ''}.
                 </Text>
               )}
-              <Text style={[styles.hint, { color: colors.textSecondary }]}>0 — полное расслабление, 100 — максимальный уровень из вашего опыта</Text>
+              <Text style={styles.hint}>0 — полное расслабление, 100 — максимальный уровень из вашего опыта</Text>
               <View style={styles.scaleContainer}>
                 {QUICK_STEPS.map(val => (
                   <TouchableOpacity
                     key={val}
                     style={[styles.scaleBtn, { backgroundColor: intensity === val ? colors.accent : colors.surface, borderColor: colors.border }]}
-                    onPress={() => handleIntensitySelect(val)}
+                    onPress={() => { setIntensity(val); setStep('result'); }}
                   >
                     <Text style={[styles.scaleBtnText, { color: intensity === val ? colors.background : colors.text }]}>{val}</Text>
                   </TouchableOpacity>
                 ))}
               </View>
-              <StyledButton title="Назад" onPress={() => setStep('body')} variant="secondary" />
+              <StyledButton title="← Назад к боди-скану" onPress={() => setStep('body')} variant="secondary" />
             </View>
           )}
 
@@ -290,25 +261,15 @@ export default function CompassScreen() {
               <Text style={[styles.resultDesc, { color: colors.text }]}>{levelInfo.desc}</Text>
 
               {recommended.length > 0 && (
-                <View style={{ marginTop: 8, marginBottom: 12 }}>
-                  <Text style={[styles.recTitle, { color: colors.accent }]}>Рекомендуемые техники:</Text>
+                <View style={{ marginVertical: 12 }}>
+                  <Text style={[styles.recTitle, { color: colors.accent }]}>🔧 Рекомендуемые техники:</Text>
                   {recommended.map((tech, i) => {
-                    const details = TECHNIQUE_DETAILS[tech] || { section: 'Скоро появится', router: null };
+                    const techId = TECHNIQUE_ID_MAP[tech] || '';
                     return (
                       <TouchableOpacity
                         key={i}
-                        style={[styles.techBtn, { backgroundColor: colors.surface, borderColor: colors.border }]}
-                        onPress={() => {
-                          if (details.router) {
-                            // В будущем заменим на router.push(details.router)
-                            Alert.alert(
-                              tech,
-                              `Техника находится в разделе «${details.section}». Перейдите туда, чтобы выполнить упражнение.`
-                            );
-                          } else {
-                            Alert.alert(tech, 'Эта техника появится в ближайшем обновлении.');
-                          }
-                        }}
+                        style={styles.techBtn}
+                        onPress={() => router.push({ pathname: '/techniques', params: { open: techId } })}
                         activeOpacity={0.7}
                       >
                         <Text style={[styles.techBtnText, { color: colors.text }]}>{tech}</Text>
@@ -319,7 +280,8 @@ export default function CompassScreen() {
                 </View>
               )}
 
-              <StyledButton title="Пройти заново" onPress={reset} variant="secondary" />
+              <StyledButton title="🔧 Перейти к техникам" onPress={() => router.push('/techniques')} />
+              <StyledButton title="Пройти заново" onPress={() => { setStep('body'); setSelectedSymptoms([]); setSelectedEmotions([]); setSelectedUrges([]); setIntensity(null); }} variant="secondary" />
             </View>
           )}
         </ScrollView>
@@ -340,22 +302,27 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#1E2D3A',
   },
-  cardTitle: { fontSize: 18, fontWeight: '600', marginBottom: 8, textAlign: 'center' },
-  hint: { fontSize: 13, textAlign: 'center', marginBottom: 12, fontStyle: 'italic' },
-  contextHint: { fontSize: 13, textAlign: 'center', marginBottom: 8, fontStyle: 'italic', lineHeight: 18 },
-  sectionTitle: { fontSize: 16, fontWeight: '600', marginBottom: 8, marginTop: 4 },
+  cardTitle: { fontSize: 20, fontWeight: '600', marginBottom: 8, textAlign: 'center' },
+  invite: { fontSize: 15, color: '#C9A84C', marginBottom: 12, lineHeight: 22, textAlign: 'center', fontWeight: '500' },
+  hint: { fontSize: 13, textAlign: 'center', marginBottom: 12, fontStyle: 'italic', color: '#7B8FA1' },
+  contextHint: { fontSize: 13, textAlign: 'center', marginBottom: 8, fontStyle: 'italic', lineHeight: 18, color: '#7B8FA1' },
+  blockDivider: { height: 1, backgroundColor: '#1E2D3A', marginVertical: Spacing.md },
   checkRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 8,
-    paddingHorizontal: 4,
-    gap: 8,
-    borderRadius: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 8,
+    gap: 10,
+    borderRadius: 10,
+    marginBottom: 4,
   },
   checkRowActive: {
     backgroundColor: 'rgba(201,168,76,0.15)',
   },
-  checkLabel: { fontSize: 14, flex: 1 },
+  checkLabel: { fontSize: 15, flex: 1 },
+  buttonGroup: { marginTop: Spacing.md },
+  skipBtn: { alignItems: 'center', marginTop: 10 },
+  skipText: { fontSize: 14 },
   scaleContainer: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 6, marginBottom: 12 },
   scaleBtn: {
     width: 40,
@@ -366,20 +333,23 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   scaleBtnText: { fontSize: 14, fontWeight: '600' },
-  skipBtn: { alignItems: 'center', marginTop: 12 },
-  skipText: { fontSize: 14 },
   resultHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
   resultTitle: { fontSize: 22, fontWeight: '700' },
-  resultSubtitle: { fontSize: 14, marginTop: 2 },
-  resultDesc: { fontSize: 15, lineHeight: 22, marginBottom: 12 },
-  recTitle: { fontSize: 15, fontWeight: '600', marginBottom: 8 },
+  resultSubtitle: { fontSize: 14, marginTop: 2, color: '#7B8FA1' },
+  resultDesc: { fontSize: 15, lineHeight: 22, marginBottom: 12, color: '#D0D9E2' },
+  recTitle: { fontSize: 15, fontWeight: '600', marginBottom: 8, color: '#C9A84C' },
+  techItem: { paddingVertical: 6, paddingLeft: 8 },
+  techName: { fontSize: 14, fontWeight: '500' },
   techBtn: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    backgroundColor: '#131E2B',
     borderRadius: 8,
     borderWidth: 1,
+    borderColor: '#1E2D3A',
     marginBottom: 6,
   },
   techBtnText: { fontSize: 14, fontWeight: '500' },

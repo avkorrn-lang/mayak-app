@@ -42,8 +42,7 @@ export default function TabLayout() {
         <Tabs.Screen name="index" options={{ tabBarLabel: 'Маяк', tabBarIcon: ({ color }) => <TabIcon name="lighthouse" color={color} /> }} />
         <Tabs.Screen name="compass" options={{ tabBarLabel: 'Компас', tabBarIcon: ({ color }) => <TabIcon name="compass" color={color} /> }} />
         <Tabs.Screen name="inventory" options={{ tabBarLabel: 'АБЦ', tabBarIcon: ({ color }) => <TabIcon name="clipboard-text" color={color} /> }} />
-        <Tabs.Screen name="harbor" options={{ tabBarLabel: 'Бухта', tabBarIcon: ({ color }) => <TabIcon name="anchor" color={color} /> }} />
-        <Tabs.Screen name="smartscreen" options={{ tabBarLabel: 'СМАРТ', tabBarIcon: ({ color }) => <TabIcon name="brain" color={color} /> }} />
+        <Tabs.Screen name="techniques" options={{ tabBarLabel: 'Техники', tabBarIcon: ({ color }) => <TabIcon name="brain" color={color} /> }} />
         <Tabs.Screen name="aboutscreen" options={{ tabBarLabel: 'О программе', tabBarIcon: ({ color }) => <TabIcon name="information" color={color} /> }} />
       </Tabs>
     </ThemeContext.Provider>
