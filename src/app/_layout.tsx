@@ -1,24 +1,42 @@
-import React, { useEffect } from 'react'; import { Platform, BackHandler, Alert } from 'react-native'; import { Tabs } from 'expo-router'; import { MaterialCommunityIcons } from '@expo/vector-icons'; import { useSafeAreaInsets } from 'react-native-safe-area-context'; import { ThemeContext, ThemeMode } from '../theme';
+import React, { useEffect } from 'react';
+import { Platform, BackHandler, Alert, ColorValue } from 'react-native';
+import { Tabs } from 'expo-router';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ThemeContext } from '../theme';
 
-function TabIcon({ name, color, size = 24 }: { name: React.ComponentProps<typeof MaterialCommunityIcons>['name']; color: string; size?: number }) {
-  return <MaterialCommunityIcons name={name} size={size} color={color} />;
+function TabIcon({ name, color, size = 24 }: { name: React.ComponentProps<typeof MaterialCommunityIcons>['name']; color: ColorValue; size?: number }) {
+  return <MaterialCommunityIcons name={name} size={size} color={color as string} />;
 }
 
 export default function TabLayout() {
   const insets = useSafeAreaInsets();
+
   useEffect(() => {
-    const onBack = () => { Alert.alert('Выход', 'Хотите закрыть приложение?', [{ text: 'Нет', style: 'cancel' }, { text: 'Да', onPress: () => BackHandler.exitApp() }]); return true; };
-    BackHandler.addEventListener('hardwareBackPress', onBack);
-    return () => BackHandler.removeEventListener('hardwareBackPress', onBack);
+    const handler = () => {
+      Alert.alert('Выход', 'Хотите закрыть приложение?', [
+        { text: 'Нет', style: 'cancel' },
+        { text: 'Да', onPress: () => BackHandler.exitApp() }
+      ]);
+      return true;
+    };
+    const subscription = BackHandler.addEventListener('hardwareBackPress', handler);
+    return () => subscription.remove();
   }, []);
 
   return (
     <ThemeContext.Provider value={'dark'}>
       <Tabs screenOptions={{
         headerShown: false,
-        tabBarStyle: { backgroundColor: '#0B1622', borderTopColor: '#1E2D3A', height: 60 + (Platform.OS === 'android' ? insets.bottom : 0), paddingBottom: Platform.OS === 'android' ? insets.bottom : 8, paddingTop: 8 },
-        tabBarActiveTintColor: '#C9A84C',
-        tabBarInactiveTintColor: '#7B8FA1',
+        tabBarStyle: {
+          backgroundColor: '#0B1622' as ColorValue,
+          borderTopColor: '#1E2D3A' as ColorValue,
+          height: 60 + (Platform.OS === 'android' ? insets.bottom : 0),
+          paddingBottom: Platform.OS === 'android' ? insets.bottom : 8,
+          paddingTop: 8,
+        },
+        tabBarActiveTintColor: '#C9A84C' as ColorValue,
+        tabBarInactiveTintColor: '#7B8FA1' as ColorValue,
         tabBarLabelStyle: { fontSize: 11, fontWeight: '600' }
       }}>
         <Tabs.Screen name="index" options={{ tabBarLabel: 'Маяк', tabBarIcon: ({ color }) => <TabIcon name="lighthouse" color={color} /> }} />

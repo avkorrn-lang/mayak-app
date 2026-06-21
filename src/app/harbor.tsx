@@ -12,7 +12,7 @@ export default function HarborScreen() {
   const colors = useThemeColors();
   const [timerRunning, setTimerRunning] = useState(false);
   const [secondsLeft, setSecondsLeft] = useState(TOTAL_SECONDS);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [expandedRitual, setExpandedRitual] = useState<number | null>(null);
 
   const startTimer = () => {
