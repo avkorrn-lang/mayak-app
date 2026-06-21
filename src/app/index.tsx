@@ -83,7 +83,7 @@ function getRecommendedTechniques(emotions: string[], level: number): string[] {
 export default function CompassScreen() {
   const colors = useThemeColors();
   const router = useRouter();
-  const [step, setStep] = useState<'welcome' | 'choose' | 'body' | 'intensity' | 'result'>('welcome');
+  const [step, setStep] = useState<'welcome' | 'quick' | 'body' | 'intensity' | 'result'>('welcome');
   const [selectedSymptoms, setSelectedSymptoms] = useState<number[]>([]);
   const [selectedEmotions, setSelectedEmotions] = useState<number[]>([]);
   const [selectedUrges, setSelectedUrges] = useState<number[]>([]);
@@ -122,7 +122,6 @@ export default function CompassScreen() {
     setIntensity(null);
   };
 
-  // ---------- Приветственный экран ----------
   if (step === 'welcome') {
     return (
       <Background>
@@ -164,8 +163,8 @@ export default function CompassScreen() {
               </View>
               <Text style={styles.levelDesc}>Эмоция захлёстывает, нужно быстро снизить накал через тело.</Text>
             </View>
-            <StyledButton title="Оценить состояние" onPress={() => setStep('choose')} />
-            <TouchableOpacity onPress={() => setStep('choose')} style={styles.skipBtn}>
+            <StyledButton title="Оценить состояние" onPress={() => setStep('body')} />
+            <TouchableOpacity onPress={() => setStep('body')} style={styles.skipBtn}>
               <Text style={[styles.skipText, { color: colors.textSecondary }]}>Пропустить объяснение</Text>
             </TouchableOpacity>
           </ScrollView>
@@ -174,9 +173,6 @@ export default function CompassScreen() {
     );
   }
 
-  // ---------- Остальные экраны (без изменений, только подправлен переход) ----------
-  // ... весь остальной код прежний, но стартуем с 'choose', а не 'body'
-  // Вставим его ниже без изменений, заменив всё, что было после welcome.
   return (
     <Background>
       <SafeAreaView style={styles.safe}>
@@ -189,23 +185,6 @@ export default function CompassScreen() {
             Оцените своё состояние, чтобы подобрать подходящую технику
           </Text>
 
-          {step === 'choose' && (
-            <View style={styles.card}>
-              <Text style={[styles.cardTitle, { color: colors.text }]}>Как будем оценивать?</Text>
-              <View style={styles.row}>
-                <TouchableOpacity style={[styles.methodBtn, { backgroundColor: colors.surface, borderColor: colors.border }]} onPress={() => setStep('quick')} activeOpacity={0.7}>
-                  <MaterialCommunityIcons name="speedometer" size={32} color={colors.accent} />
-                  <Text style={[styles.methodTitle, { color: colors.text }]}>Быстрая шкала</Text>
-                  <Text style={[styles.methodDesc, { color: colors.textSecondary }]}>0–100% за пару секунд</Text>
-                </TouchableOpacity>
-                <TouchableOpacity style={[styles.methodBtn, { backgroundColor: colors.surface, borderColor: colors.border }]} onPress={() => setStep('body')} activeOpacity={0.7}>
-                  <MaterialCommunityIcons name="human" size={32} color={colors.accent} />
-                  <Text style={[styles.methodTitle, { color: colors.text }]}>Боди-скан</Text>
-                  <Text style={[styles.methodDesc, { color: colors.textSecondary }]}>Через ощущения в теле</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          )}
 
           {step === 'quick' && (
             <View style={styles.card}>
@@ -222,7 +201,7 @@ export default function CompassScreen() {
                   </TouchableOpacity>
                 ))}
               </View>
-              <StyledButton title="← Назад" onPress={() => setStep('choose')} variant="secondary" />
+              <StyledButton title="← Назад" onPress={() => setStep('body')} variant="secondary" />
             </View>
           )}
 
