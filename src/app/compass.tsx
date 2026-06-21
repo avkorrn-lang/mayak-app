@@ -3,69 +3,56 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-nati
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import Background from '../components/Background';
-import ProgressBar from '../components/ProgressBar';
 import StyledButton from '../components/StyledButton';
+import StyledInput from '../components/StyledInput';
 import { useThemeColors, Fonts, Spacing } from '../theme';
 
-const questions = [
-  {
-    text: 'Моя картина мира расширилась, а не сузилась?',
-    hint: 'Да — я вижу возможности и варианты; Нет — я зациклен только на угрозе.',
-  },
-  {
-    text: 'Энергия растёт, а не уходит в паралич?',
-    hint: 'Да — я могу действовать; Нет — я избегаю или замираю.',
-  },
-  {
-    text: 'Я опираюсь на факты, а не на туман будущего?',
-    hint: 'Да — я проверяю реальность; Нет — я верю пугающим фантазиям.',
-  },
+type Mode = 'choose' | 'quick' | 'body' | 'result';
+
+const QUICK_STEPS = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
+const BODY_SCAN_QUESTIONS = [
+  'Где в теле вы чувствуете напряжение или дискомфорт?',
+  'Какое ощущение: тяжесть, жар, дрожь, сжатие, пустота?',
+  'Что хочется сделать прямо сейчас: сжаться, убежать, ударить, замереть?'
 ];
 
-function getRecommendation(yesCount: number, colors: any) {
-  if (yesCount === 3)
-    return {
-      status: 'Здоровая мобилизация',
-      color: colors.positive,
-      rec: 'Ваша тревога сейчас помогает вам действовать. Продолжайте опираться на факты и делать маленькие шаги.',
-    };
-  if (yesCount === 2)
-    return {
-      status: 'На грани',
-      color: colors.accent,
-      rec: 'Тревога скорее мобилизует, но есть риск соскользнуть в руминацию. Попробуйте пройти АБЦ анализ, чтобы чётче разделить факты и фантазии.',
-    };
-  if (yesCount === 1)
-    return {
-      status: 'Паралич / избегание',
-      color: colors.danger,
-      rec: 'Тревога вас парализует. Сделайте паузу: используйте Бухту или технику Серфинг эмоций в СМАРТ, чтобы вернуть ясность.',
-    };
-  return {
-    status: 'Сильная невротическая тревога',
-    color: colors.danger,
-    rec: 'Похоже, вы захвачены страхом. Остановитесь: 10-минутный таймер в Бухте или упражнение Осадда образов в СМАРТ помогут снизить накал.',
-  };
+function getLevel(value: number) {
+  if (value <= 40) return { level: 'green', title: 'Решать', subtitle: '0–40% · Я могу мыслить', icon: 'lightbulb-on-outline' as const, desc: 'Ваш уровень дистресса невысок. Подойдут навыки когнитивной работы:\n• Проверка фактов\n• Противоположное действие\n• Решение проблем (ЗА и ПРОТИВ)\n• Радикальное принятие', color: '#4F9F6E' };
+  if (value <= 65) return { level: 'yellow', title: 'Пережить', subtitle: '40–65% · Мне нужно пережить', icon: 'shield-half-full' as const, desc: 'Эмоция мешает ясно мыслить. Лучше использовать навыки перенесения дистресса:\n• Самоуспокоение через 5 чувств\n• Улучшение момента\n• Отвлечение\n• Полуулыбка и открытые ладони', color: '#C9A84C' };
+  return { level: 'red', title: 'Сбросить', subtitle: '65–100% · Стоп, сброс напряжения', icon: 'alert-octagon' as const, desc: 'Эмоция захлёстывает. Необходимо быстро снизить накал:\n• STOP (Стоп, шаг назад, наблюдать)\n• ТРУД (температура, расслабление, упражнения, дыхание)', color: '#C44F4F' };
 }
 
 export default function CompassScreen() {
   const colors = useThemeColors();
-  const [step, setStep] = useState(1);
-  const [answers, setAnswers] = useState<boolean[]>(new Array(3).fill(null));
+  const [mode, setMode] = useState<Mode>('choose');
+  const [quickValue, setQuickValue] = useState<number | null>(null);
+  const [bodyAnswers, setBodyAnswers] = useState<string[]>(['', '', '']);
+  const [resultValue, setResultValue] = useState<number | null>(null);
 
-  const handleAnswer = (index: number, value: boolean) => {
-    const newAnswers = [...answers];
-    newAnswers[index] = value;
-    setAnswers(newAnswers);
-    if (step < 3) {
-      setStep(step + 1);
-    } else {
-      setStep(4); // завершено
-    }
+  const handleQuickSelect = (value: number) => {
+    setQuickValue(value);
+    setResultValue(value);
+    setMode('result');
   };
 
-  const yesCount = answers.filter((a) => a === true).length;
-  const recommendation = getRecommendation(yesCount, colors);
+  const handleBodyComplete = () => {
+    // After body scan, ask to rate level manually (simplified for now)
+    setMode('quick');
+  };
+
+  const handleBodyRatingComplete = (value: number) => {
+    setResultValue(value);
+    setMode('result');
+  };
+
+  const reset = () => {
+    setMode('choose');
+    setQuickValue(null);
+    setBodyAnswers(['', '', '']);
+    setResultValue(null);
+  };
+
+  const result = resultValue !== null ? getLevel(resultValue) : null;
 
   return (
     <Background>
@@ -76,45 +63,81 @@ export default function CompassScreen() {
           </View>
           <Text style={[Fonts.title, { color: colors.text, textAlign: 'center' }]}>Компас</Text>
           <Text style={[Fonts.subtitle, { color: colors.textSecondary, textAlign: 'center', marginBottom: Spacing.md }]}>
-            Проверьте, мобилизует ли вас тревога или парализует
+            Оцените своё состояние, чтобы подобрать подходящий навык
           </Text>
-          <ProgressBar step={step > 3 ? 3 : step} total={3} />
 
-          {step < 4 && (
-            <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-              <Text style={[styles.questionText, { color: colors.text }]}>{questions[step - 1].text}</Text>
-              <Text style={[styles.questionHint, { color: colors.textSecondary }]}>{questions[step - 1].hint}</Text>
-              <View style={styles.switchRow}>
-                <StyledButton
-                  title="Да"
-                  onPress={() => handleAnswer(step - 1, true)}
-                  variant={answers[step - 1] === true ? 'primary' : 'secondary'}
-                />
-                <View style={{ width: 10 }} />
-                <StyledButton
-                  title="Нет"
-                  onPress={() => handleAnswer(step - 1, false)}
-                  variant={answers[step - 1] === false ? 'primary' : 'secondary'}
-                />
-              </View>
-              {step > 1 && (
-                <TouchableOpacity onPress={() => setStep(step - 1)} style={{ marginTop: 12 }}>
-                  <Text style={{ color: colors.textSecondary }}>← Вернуться к предыдущему вопросу</Text>
+          {mode === 'choose' && (
+            <View style={styles.card}>
+              <Text style={[styles.cardTitle, { color: colors.text }]}>Как будем оценивать?</Text>
+              <View style={styles.row}>
+                <TouchableOpacity style={[styles.methodBtn, { backgroundColor: colors.surface, borderColor: colors.border }]} onPress={() => setMode('quick')} activeOpacity={0.7}>
+                  <MaterialCommunityIcons name="speedometer" size={32} color={colors.accent} />
+                  <Text style={[styles.methodTitle, { color: colors.text }]}>Быстрая шкала</Text>
+                  <Text style={[styles.methodDesc, { color: colors.textSecondary }]}>0–100% за пару секунд</Text>
                 </TouchableOpacity>
+                <TouchableOpacity style={[styles.methodBtn, { backgroundColor: colors.surface, borderColor: colors.border }]} onPress={() => setMode('body')} activeOpacity={0.7}>
+                  <MaterialCommunityIcons name="human" size={32} color={colors.accent} />
+                  <Text style={[styles.methodTitle, { color: colors.text }]}>Боди-скан</Text>
+                  <Text style={[styles.methodDesc, { color: colors.textSecondary }]}>Через ощущения в теле</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          )}
+
+          {mode === 'quick' && (
+            <View style={styles.card}>
+              <Text style={[styles.cardTitle, { color: colors.text }]}>Насколько сильна эмоция?</Text>
+              <Text style={[styles.hint, { color: colors.textSecondary }]}>0 — полное расслабление, 100 — максимальный уровень из вашего опыта</Text>
+              <View style={styles.scaleContainer}>
+                {QUICK_STEPS.map(val => (
+                  <TouchableOpacity
+                    key={val}
+                    style={[styles.scaleBtn, { backgroundColor: quickValue === val ? colors.accent : colors.surface, borderColor: colors.border }]}
+                    onPress={() => resultValue !== null ? handleBodyRatingComplete(val) : handleQuickSelect(val)}
+                  >
+                    <Text style={[styles.scaleBtnText, { color: quickValue === val ? colors.background : colors.text }]}>{val}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+              {resultValue !== null && (
+                <StyledButton title="Назад к выбору" onPress={() => { setResultValue(null); setMode('choose'); }} variant="secondary" />
               )}
             </View>
           )}
 
-          {step === 4 && (
-            <View style={[styles.resultCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-              <View style={styles.indicatorRow}>
-                <View style={[styles.circle, { backgroundColor: recommendation.color }]}>
-                  <MaterialCommunityIcons name="compass" size={40} color={colors.background} />
+          {mode === 'body' && (
+            <View style={styles.card}>
+              <Text style={[styles.cardTitle, { color: colors.text }]}>Боди-скан</Text>
+              {BODY_SCAN_QUESTIONS.map((q, i) => (
+                <StyledInput
+                  key={i}
+                  label={`${i+1}. ${q}`}
+                  value={bodyAnswers[i]}
+                  onChangeText={(text) => {
+                    const newAnswers = [...bodyAnswers];
+                    newAnswers[i] = text;
+                    setBodyAnswers(newAnswers);
+                  }}
+                  placeholder="Ваш ответ..."
+                  multiline
+                />
+              ))}
+              <StyledButton title="Дальше: оценить уровень" onPress={handleBodyComplete} />
+            </View>
+          )}
+
+          {mode === 'result' && result && (
+            <View style={[styles.card, { borderLeftColor: result.color, borderLeftWidth: 4 }]}>
+              <View style={styles.resultHeader}>
+                <MaterialCommunityIcons name={result.icon} size={48} color={result.color} />
+                <View style={{ marginLeft: 12, flex: 1 }}>
+                  <Text style={[styles.resultTitle, { color: result.color }]}>{result.title}</Text>
+                  <Text style={[styles.resultSubtitle, { color: colors.textSecondary }]}>{result.subtitle}</Text>
                 </View>
-                <Text style={[styles.statusText, { color: recommendation.color }]}>{recommendation.status}</Text>
               </View>
-              <Text style={[styles.recommendationText, { color: colors.textSecondary }]}>{recommendation.rec}</Text>
-              <StyledButton title="Пройти заново" onPress={() => { setStep(1); setAnswers(new Array(3).fill(null)); }} variant="secondary" />
+              <Text style={[styles.resultDesc, { color: colors.text }]}>{result.desc}</Text>
+              <Text style={[styles.resultHint, { color: colors.textSecondary }]}>Выберите подходящую технику в разделе «Техники» или вернитесь к сканеру позже.</Text>
+              <StyledButton title="Пройти заново" onPress={reset} variant="secondary" />
             </View>
           )}
         </ScrollView>
@@ -127,13 +150,41 @@ const styles = StyleSheet.create({
   safe: { flex: 1 },
   scroll: { padding: Spacing.md },
   iconContainer: { alignItems: 'center', marginBottom: 8 },
-  card: { borderRadius: 16, padding: Spacing.md, marginBottom: Spacing.md, borderWidth: 1 },
-  questionText: { fontSize: 16, fontWeight: '600', marginBottom: 4 },
-  questionHint: { fontSize: 12, marginBottom: 16 },
-  switchRow: { flexDirection: 'row', justifyContent: 'space-between' },
-  resultCard: { borderRadius: 16, padding: Spacing.md, borderWidth: 1, marginTop: Spacing.md },
-  indicatorRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 12, gap: 12 },
-  circle: { width: 64, height: 64, borderRadius: 32, alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 6, elevation: 5 },
-  statusText: { fontSize: 20, fontWeight: '700', flex: 1 },
-  recommendationText: { fontSize: 14, lineHeight: 20, marginBottom: 12 },
+  card: {
+    backgroundColor: 'rgba(19,30,43,0.8)',
+    borderRadius: 16,
+    padding: Spacing.md,
+    marginTop: Spacing.md,
+    borderWidth: 1,
+    borderColor: '#1E2D3A',
+  },
+  cardTitle: { fontSize: 18, fontWeight: '600', marginBottom: 8, textAlign: 'center' },
+  hint: { fontSize: 13, textAlign: 'center', marginBottom: 12, fontStyle: 'italic' },
+  row: { flexDirection: 'row', justifyContent: 'space-around', gap: 12 },
+  methodBtn: {
+    flex: 1,
+    borderRadius: 12,
+    borderWidth: 1,
+    padding: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+  },
+  methodTitle: { fontSize: 15, fontWeight: '600', marginTop: 4 },
+  methodDesc: { fontSize: 12 },
+  scaleContainer: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 6, marginBottom: 12 },
+  scaleBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  scaleBtnText: { fontSize: 14, fontWeight: '600' },
+  resultHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
+  resultTitle: { fontSize: 22, fontWeight: '700' },
+  resultSubtitle: { fontSize: 14, marginTop: 2 },
+  resultDesc: { fontSize: 15, lineHeight: 22, marginBottom: 12 },
+  resultHint: { fontSize: 13, marginBottom: 12, fontStyle: 'italic' },
 });
