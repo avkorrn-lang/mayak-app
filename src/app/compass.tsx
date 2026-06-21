@@ -4,16 +4,31 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import Background from '../components/Background';
 import StyledButton from '../components/StyledButton';
-import StyledInput from '../components/StyledInput';
 import { useThemeColors, Fonts, Spacing } from '../theme';
 
 type Mode = 'choose' | 'quick' | 'body' | 'result';
 
 const QUICK_STEPS = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
-const BODY_SCAN_QUESTIONS = [
-  'Где в теле вы чувствуете напряжение или дискомфорт?',
-  'Какое ощущение: тяжесть, жар, дрожь, сжатие, пустота?',
-  'Что хочется сделать прямо сейчас: сжаться, убежать, ударить, замереть?'
+
+const SYMPTOMS = [
+  'Тяжесть',
+  'Жар',
+  'Дрожь',
+  'Сжатие, напряжение',
+  'Пустота',
+  'Учащённое сердцебиение',
+  'Потливость',
+  'Ком в горле',
+  'Ничего особенного, я спокоен',
+];
+
+const URGES = [
+  'Сжаться, спрятаться, исчезнуть',
+  'Убежать',
+  'Ударить, спорить, крушить',
+  'Замереть',
+  'Плакать',
+  'Ничего не хочется, я в порядке',
 ];
 
 function getLevel(value: number) {
@@ -22,12 +37,69 @@ function getLevel(value: number) {
   return { level: 'red', title: 'Сбросить', subtitle: '65–100% · Стоп, сброс напряжения', icon: 'alert-octagon' as const, desc: 'Эмоция захлёстывает. Необходимо быстро снизить накал:\n• STOP (Стоп, шаг назад, наблюдать)\n• ТРУД (температура, расслабление, упражнения, дыхание)', color: '#C44F4F' };
 }
 
+function getLevelFromScores(symptomCount: number, urgeCount: number): number {
+  const total = symptomCount + urgeCount;
+  if (total <= 1) return Math.round(total * 20); // 0–20%
+  if (total <= 3) return 30 + (total - 2) * 15; // 30–50%
+  if (total <= 6) return 55 + (total - 4) * 5;  // 55–75%
+  return 80 + Math.min((total - 7) * 5, 20);     // 80–100%
+}
+
 export default function CompassScreen() {
   const colors = useThemeColors();
   const [mode, setMode] = useState<Mode>('choose');
   const [quickValue, setQuickValue] = useState<number | null>(null);
-  const [bodyAnswers, setBodyAnswers] = useState<string[]>(['', '', '']);
+  const [selectedSymptoms, setSelectedSymptoms] = useState<number[]>([]);
+  const [selectedUrges, setSelectedUrges] = useState<number[]>([]);
   const [resultValue, setResultValue] = useState<number | null>(null);
+
+  const toggleSymptom = (index: number) => {
+    setSelectedSymptoms(prev => {
+      if (index === SYMPTOMS.length - 1) {
+        // Нажат "ничего особенного" – снимаем остальные
+        return prev.includes(index) ? [] : [index];
+      }
+      // Иначе снимаем "ничего особенного" и переключаем выбранный
+      const withoutNeutral = prev.filter(i => i !== SYMPTOMS.length - 1);
+      if (withoutNeutral.includes(index)) {
+        return withoutNeutral.filter(i => i !== index);
+      }
+      return [...withoutNeutral, index];
+    });
+  };
+
+  const toggleUrge = (index: number) => {
+    setSelectedUrges(prev => {
+      if (index === URGES.length - 1) {
+        return prev.includes(index) ? [] : [index];
+      }
+      const withoutNeutral = prev.filter(i => i !== URGES.length - 1);
+      if (withoutNeutral.includes(index)) {
+        return withoutNeutral.filter(i => i !== index);
+      }
+      return [...withoutNeutral, index];
+    });
+  };
+
+  const handleBodyEvaluate = () => {
+    const symptomCount = selectedSymptoms.filter(i => i !== SYMPTOMS.length - 1).length;
+    const urgeCount = selectedUrges.filter(i => i !== URGES.length - 1).length;
+    // Если выбраны только нейтральные варианты (ничего особенного + ничего не хочется), даём 0%
+    if (symptomCount === 0 && urgeCount === 0) {
+      setResultValue(0);
+    } else {
+      const percent = getLevelFromScores(symptomCount, urgeCount);
+      setResultValue(Math.min(100, Math.max(0, percent)));
+    }
+    setMode('result');
+  };
+
+  const isBodyValid = () => {
+    const symptomCount = selectedSymptoms.filter(i => i !== SYMPTOMS.length - 1).length;
+    const urgeCount = selectedUrges.filter(i => i !== URGES.length - 1).length;
+    // Можно оценить, если выбрано хотя бы что-то (даже нейтральное)
+    return selectedSymptoms.length > 0 || selectedUrges.length > 0;
+  };
 
   const handleQuickSelect = (value: number) => {
     setQuickValue(value);
@@ -35,20 +107,11 @@ export default function CompassScreen() {
     setMode('result');
   };
 
-  const handleBodyComplete = () => {
-    // After body scan, ask to rate level manually (simplified for now)
-    setMode('quick');
-  };
-
-  const handleBodyRatingComplete = (value: number) => {
-    setResultValue(value);
-    setMode('result');
-  };
-
   const reset = () => {
     setMode('choose');
     setQuickValue(null);
-    setBodyAnswers(['', '', '']);
+    setSelectedSymptoms([]);
+    setSelectedUrges([]);
     setResultValue(null);
   };
 
@@ -93,36 +156,68 @@ export default function CompassScreen() {
                   <TouchableOpacity
                     key={val}
                     style={[styles.scaleBtn, { backgroundColor: quickValue === val ? colors.accent : colors.surface, borderColor: colors.border }]}
-                    onPress={() => resultValue !== null ? handleBodyRatingComplete(val) : handleQuickSelect(val)}
+                    onPress={() => handleQuickSelect(val)}
                   >
                     <Text style={[styles.scaleBtnText, { color: quickValue === val ? colors.background : colors.text }]}>{val}</Text>
                   </TouchableOpacity>
                 ))}
               </View>
-              {resultValue !== null && (
-                <StyledButton title="Назад к выбору" onPress={() => { setResultValue(null); setMode('choose'); }} variant="secondary" />
-              )}
+              <StyledButton title="Назад к выбору" onPress={() => setMode('choose')} variant="secondary" />
             </View>
           )}
 
           {mode === 'body' && (
             <View style={styles.card}>
               <Text style={[styles.cardTitle, { color: colors.text }]}>Боди-скан</Text>
-              {BODY_SCAN_QUESTIONS.map((q, i) => (
-                <StyledInput
-                  key={i}
-                  label={`${i+1}. ${q}`}
-                  value={bodyAnswers[i]}
-                  onChangeText={(text) => {
-                    const newAnswers = [...bodyAnswers];
-                    newAnswers[i] = text;
-                    setBodyAnswers(newAnswers);
-                  }}
-                  placeholder="Ваш ответ..."
-                  multiline
+
+              <Text style={[styles.sectionTitle, { color: colors.text }]}>Ощущения в теле</Text>
+              {SYMPTOMS.map((s, i) => {
+                const selected = selectedSymptoms.includes(i);
+                return (
+                  <TouchableOpacity
+                    key={i}
+                    style={[styles.checkRow, selected && styles.checkRowActive]}
+                    onPress={() => toggleSymptom(i)}
+                    activeOpacity={0.7}
+                  >
+                    <MaterialCommunityIcons
+                      name={selected ? 'checkbox-marked' : 'checkbox-blank-outline'}
+                      size={24}
+                      color={selected ? colors.accent : colors.textSecondary}
+                    />
+                    <Text style={[styles.checkLabel, { color: selected ? colors.text : colors.textSecondary }]}>{s}</Text>
+                  </TouchableOpacity>
+                );
+              })}
+
+              <Text style={[styles.sectionTitle, { color: colors.text, marginTop: Spacing.md }]}>Что хочется сделать?</Text>
+              {URGES.map((u, i) => {
+                const selected = selectedUrges.includes(i);
+                return (
+                  <TouchableOpacity
+                    key={i}
+                    style={[styles.checkRow, selected && styles.checkRowActive]}
+                    onPress={() => toggleUrge(i)}
+                    activeOpacity={0.7}
+                  >
+                    <MaterialCommunityIcons
+                      name={selected ? 'checkbox-marked' : 'checkbox-blank-outline'}
+                      size={24}
+                      color={selected ? colors.accent : colors.textSecondary}
+                    />
+                    <Text style={[styles.checkLabel, { color: selected ? colors.text : colors.textSecondary }]}>{u}</Text>
+                  </TouchableOpacity>
+                );
+              })}
+
+              <View style={{ marginTop: Spacing.md }}>
+                <StyledButton
+                  title="Оценить"
+                  onPress={handleBodyEvaluate}
+                  disabled={!isBodyValid()}
                 />
-              ))}
-              <StyledButton title="Дальше: оценить уровень" onPress={handleBodyComplete} />
+                <StyledButton title="Назад" onPress={() => setMode('choose')} variant="secondary" />
+              </View>
             </View>
           )}
 
@@ -138,6 +233,7 @@ export default function CompassScreen() {
               <Text style={[styles.resultDesc, { color: colors.text }]}>{result.desc}</Text>
               <Text style={[styles.resultHint, { color: colors.textSecondary }]}>Выберите подходящую технику в разделе «Техники» или вернитесь к сканеру позже.</Text>
               <StyledButton title="Пройти заново" onPress={reset} variant="secondary" />
+              <StyledButton title="Быстрая шкала" onPress={() => { setMode('quick'); setQuickValue(null); setResultValue(null); }} variant="secondary" />
             </View>
           )}
         </ScrollView>
@@ -172,6 +268,19 @@ const styles = StyleSheet.create({
   },
   methodTitle: { fontSize: 15, fontWeight: '600', marginTop: 4 },
   methodDesc: { fontSize: 12 },
+  sectionTitle: { fontSize: 16, fontWeight: '600', marginBottom: 8, marginTop: 4 },
+  checkRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 4,
+    gap: 8,
+    borderRadius: 8,
+  },
+  checkRowActive: {
+    backgroundColor: 'rgba(201,168,76,0.15)',
+  },
+  checkLabel: { fontSize: 14, flex: 1 },
   scaleContainer: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: 6, marginBottom: 12 },
   scaleBtn: {
     width: 40,
