@@ -12,6 +12,7 @@ const LEVELS = ['0','1','2','3','4','5','6','7','8','9','10'];
 
 export default function InventoryScreen() {
   const colors = useThemeColors();
+  const [showIntro, setShowIntro] = useState(true);
   const [step, setStep] = useState(1);
   const [answers, setAnswers] = useState<string[]>(new Array(TOTAL_STEPS).fill(''));
   const [emotionBefore, setEmotionBefore] = useState<number | null>(null);
@@ -103,8 +104,40 @@ export default function InventoryScreen() {
     prevLabel: { fontWeight: '600', marginRight: 6 },
     delta: { color: colors.text, fontSize: 17, fontWeight: '600', marginTop: 8, marginBottom: 8 },
     reflection: { color: colors.textSecondary, fontSize: 14, marginTop: Spacing.sm, fontStyle: 'italic', marginBottom: Spacing.sm },
+    introCard: { backgroundColor: colors.surface, borderRadius: 16, padding: Spacing.md, marginBottom: Spacing.md, borderWidth: 1, borderColor: colors.border },
+    introTitle: { color: colors.text, fontSize: 20, fontWeight: '600', marginBottom: 12, textAlign: 'center' },
+    introText: { color: colors.textSecondary, fontSize: 15, lineHeight: 22, marginBottom: 12 },
   });
 
+  // Введение
+  if (showIntro) {
+    return (
+      <Background>
+        <SafeAreaView style={styles.container}>
+          <ScrollView contentContainerStyle={styles.scroll}>
+            <Text style={[Fonts.title, { color: colors.text, textAlign: 'center' }]}>АБЦ анализ</Text>
+            <View style={styles.introCard}>
+              <Text style={styles.introTitle}>Что такое АБЦ анализ?</Text>
+              <Text style={styles.introText}>
+                АБЦ анализ — это техника когнитивной терапии, которая помогает отделить факты от эмоций и найти убеждения, стоящие за тревогой или гневом.{'\n\n'}
+                Она состоит из шести шагов (ABCDE):{'\n'}
+                • <Text style={{ fontWeight: '600', color: colors.accent }}>Событие</Text> — один конкретный факт без оценок.{'\n'}
+                • <Text style={{ fontWeight: '600', color: colors.accent }}>Мысль</Text> — что пронеслось в голове в тот момент.{'\n'}
+                • <Text style={{ fontWeight: '600', color: colors.accent }}>Реакция</Text> — эмоция, телесные ощущения, импульс.{'\n'}
+                • <Text style={{ fontWeight: '600', color: colors.accent }}>Убеждение</Text> — глубинное правило или долженствование.{'\n'}
+                • <Text style={{ fontWeight: '600', color: colors.accent }}>Проверка</Text> — сбор доказательств за и против убеждения.{'\n'}
+                • <Text style={{ fontWeight: '600', color: colors.accent }}>Новый взгляд</Text> — замена жёсткой формулировки на гибкую.{'\n\n'}
+                После заполнения вы оцените уровень эмоции до и после — это покажет, насколько анализ помог снизить накал.
+              </Text>
+              <StyledButton title="Понятно, приступим" onPress={() => setShowIntro(false)} />
+            </View>
+          </ScrollView>
+        </SafeAreaView>
+      </Background>
+    );
+  }
+
+  // Завершено
   if (done) {
     const delta = (emotionBefore ?? 0) - (emotionAfter ?? 0);
     let comparisonText = `Было ${emotionBefore ?? 0} → стало ${emotionAfter ?? 0}. `;
@@ -138,6 +171,7 @@ export default function InventoryScreen() {
     );
   }
 
+  // Основная форма
   return (
     <Background>
       <SafeAreaView style={styles.container}>

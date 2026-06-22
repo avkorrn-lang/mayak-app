@@ -54,11 +54,10 @@ export default function TabLayout() {
         tabBarInactiveTintColor: '#7B8FA1' as ColorValue,
         tabBarLabelStyle: { fontSize: 11, fontWeight: '600' }
       }}>
-        <Tabs.Screen name="index" options={{ tabBarLabel: 'Компас', tabBarIcon: ({ color }) => <TabIcon name="compass" color={color} /> }} />
+        <Tabs.Screen name="index" options={{ tabBarLabel: 'Маяк', tabBarIcon: ({ color }) => <TabIcon name="lighthouse" color={color} /> }} />
         <Tabs.Screen name="techniques" options={{ tabBarLabel: 'Техники', tabBarIcon: ({ color }) => <TabIcon name="brain" color={color} /> }} />
-        <Tabs.Screen name="skills" options={{ tabBarLabel: 'Навыки', tabBarIcon: ({ color }) => <TabIcon name="school" color={color} /> }} />
         <Tabs.Screen name="inventory" options={{ tabBarLabel: 'АБЦ', tabBarIcon: ({ color }) => <TabIcon name="clipboard-text" color={color} /> }} />
-        <Tabs.Screen name="aboutscreen" options={{ tabBarLabel: 'О программе', tabBarIcon: ({ color }) => <TabIcon name="information" color={color} /> }} />
+        <Tabs.Screen name="aboutscreen" options={{ tabBarLabel: 'О приложении', tabBarIcon: ({ color }) => <TabIcon name="information" color={color} /> }} />
       </Tabs>
     </ThemeContext.Provider>
   );

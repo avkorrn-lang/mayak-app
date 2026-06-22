@@ -15,14 +15,12 @@ export default function AboutScreen() {
     <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
       <ScrollView contentContainerStyle={styles.scroll}>
         <Text style={[Fonts.title, { color: colors.text }]}>О приложении «Маяк»</Text>
-        <Text style={[styles.text, { color: colors.text }]}>Это ваш навигатор в шторме тревоги. Приложение не заменяет психолога, но помогает вернуть ясность и перейти от паники к действию.</Text>
 
         <View style={[styles.plate, { backgroundColor: colors.surface, borderColor: colors.border }]}>
           <Text style={[styles.plateTitle, { color: colors.accent }]}>Принципы работы</Text>
           <Text style={[styles.text, { color: colors.text }]}>В приложении использованы подходы:</Text>
           <Text style={[styles.bullet, { color: colors.text }]}>• КПТ: отделение фактов от интерпретаций.</Text>
           <Text style={[styles.bullet, { color: colors.text }]}>• РЭПТ: замена жёстких «должен» на «предпочитаю».</Text>
-          <Text style={[styles.bullet, { color: colors.text }]}>• Духовность (буддизм, стоицизм): наблюдение за мыслями без отождествления.</Text>
           <Text style={[styles.bullet, { color: colors.text }]}>• DBT: баланс принятия и изменения.</Text>
           <Text style={[styles.bullet, { color: colors.text }]}>• SMART Recovery: инструменты самопомощи.</Text>
           <Text style={[styles.bullet, { color: colors.text }]}>• Тайм-менеджмент: превращение проблемы в действие.</Text>
