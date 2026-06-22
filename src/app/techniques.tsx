@@ -9,16 +9,7 @@ import ProgressBar from '../components/ProgressBar';
 import { useThemeColors, Fonts, Spacing } from '../theme';
 
 interface Technique {
-  id: string;
-  title: string;
-  when: string;
-  desc: string;
-  fields: string[];
-  examples: string[];
-  finalMessage: string;
-  emojis?: string[];
-  type?: 'input' | 'instruction';
-  theory?: string;
+  id: string; title: string; when: string; desc: string; fields: string[]; examples: string[]; finalMessage: string; emojis?: string[]; type?: 'input' | 'instruction'; theory?: string;
 }
 
 const techniques: Technique[] = [
@@ -692,9 +683,9 @@ const styles = StyleSheet.create({
   glowLayer2: { width: 220, height: 220, borderRadius: 110, position: 'absolute', opacity: 0.08, shadowColor: '#C9A84C', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.3, shadowRadius: 60, elevation: 10 },
   messageArea: { paddingHorizontal: Spacing.md, marginBottom: 16, minHeight: 60, justifyContent: 'center' },
   activeMessage: { fontSize: 16, color: '#D0D9E2', textAlign: 'center', lineHeight: 24 },
-  scaleRow: { flexDirection: 'row', justifyContent: 'center', gap: 4, marginBottom: 16 },
-  scaleBtn: { width: 36, height: 36, borderRadius: 18, borderWidth: 1, borderColor: '#1E2D3A', backgroundColor: '#131E2B', alignItems: 'center', justifyContent: 'center' },
-  scaleBtnText: { fontSize: 14, fontWeight: '600', color: '#D0D9E2' },
+  scaleRow: { flexDirection: 'row', justifyContent: 'center', gap: 2, paddingHorizontal: 6, marginBottom: 16 },
+  scaleBtn: { width: 26, height: 26, borderRadius: 13, borderWidth: 1, borderColor: '#1E2D3A', backgroundColor: '#131E2B', alignItems: 'center', justifyContent: 'center' },
+  scaleBtnText: { fontSize: 12, fontWeight: '600', color: '#D0D9E2' },
   progressBarContainer: { width: '100%', height: 3, backgroundColor: '#1E2D3A', borderRadius: 2, overflow: 'hidden', position: 'absolute', bottom: 0, left: 0, right: 0 },
   progressFill: { height: '100%', backgroundColor: '#C9A84C', borderRadius: 2 },
 });

@@ -91,8 +91,8 @@ export default function InventoryScreen() {
     hint: { color: colors.textSecondary, fontSize: 14, marginBottom: 8 },
     example: { color: colors.accent, fontSize: 13, marginBottom: 12, fontStyle: 'italic' },
     row: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 12 },
-    levelRow: { flexDirection: 'row', justifyContent: 'space-evenly', marginBottom: 8 },
-    levelBtn: { width: 28, height: 32, borderRadius: 6, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: colors.border, backgroundColor: colors.background },
+    levelRow: { flexDirection: 'row', justifyContent: 'center', gap: 2, paddingHorizontal: 6, marginBottom: 8 },
+    levelBtn: { width: 26, height: 26, borderRadius: 13, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: colors.border, backgroundColor: colors.background },
     levelBtnActive: { backgroundColor: colors.accent, borderColor: colors.accent },
     levelText: { color: colors.textSecondary, fontSize: 12 },
     levelTextActive: { color: colors.background, fontWeight: '600' },
@@ -109,7 +109,7 @@ export default function InventoryScreen() {
     introText: { color: colors.textSecondary, fontSize: 15, lineHeight: 22, marginBottom: 12 },
   });
 
-  // Введение
+  // Экран-введение
   if (showIntro) {
     return (
       <Background>

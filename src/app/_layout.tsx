@@ -16,22 +16,7 @@ export default function TabLayout() {
     const handler = () => {
       Alert.alert('Выход', 'Хотите закрыть приложение?', [
         { text: 'Нет', style: 'cancel' },
-        {
-          text: 'Да',
-          onPress: () => {
-            BackHandler.exitApp();
-            // Гарантированное завершение процесса на Android
-            if (Platform.OS === 'android') {
-              setTimeout(() => {
-                try {
-                  process.exit(0);
-                } catch (e) {
-                  // На случай, если process недоступен
-                }
-              }, 100);
-            }
-          }
-        }
+        { text: 'Да', onPress: () => BackHandler.exitApp() }
       ]);
       return true;
     };
