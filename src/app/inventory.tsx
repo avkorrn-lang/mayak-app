@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useFocusEffect } from 'expo-router';
 import StyledButton from '../components/StyledButton';
 import ProgressBar from '../components/ProgressBar';
 import Background from '../components/Background';
@@ -21,6 +22,19 @@ export default function InventoryScreen() {
   const [dAssembled, setDAssembled] = useState<string | null>(null);
   const [done, setDone] = useState(false);
   const [sessionCount, setSessionCount] = useState(0);
+
+  useFocusEffect(
+    useCallback(() => {
+      setShowIntro(true);
+      setStep(1);
+      setAnswers(new Array(TOTAL_STEPS).fill(''));
+      setDParts(['','','']);
+      setDAssembled(null);
+      setEmotionBefore(null);
+      setEmotionAfter(null);
+      setDone(false);
+    }, [])
+  );
 
   const next = () => {
     if (step === 5 && !dAssembled) {
@@ -87,35 +101,34 @@ export default function InventoryScreen() {
     container: { flex: 1, backgroundColor: colors.background },
     scroll: { padding: Spacing.md, flexGrow: 1 },
     card: { backgroundColor: colors.surface, borderRadius: 16, padding: Spacing.md, marginBottom: Spacing.md, borderWidth: 1, borderColor: colors.border },
-    stepTitle: { color: colors.text, fontSize: 20, fontWeight: '600', marginBottom: 4 },
-    hint: { color: colors.textSecondary, fontSize: 14, marginBottom: 8 },
-    example: { color: colors.accent, fontSize: 13, marginBottom: 12, fontStyle: 'italic' },
+    stepTitle: { color: colors.text, fontSize: 18, fontWeight: '600', marginBottom: 16, textAlign: 'center' },
+    hint: { color: colors.textSecondary, fontSize: 14, marginBottom: 16, textAlign: 'center' },
+    example: { color: colors.accent, fontSize: 13, marginBottom: 12, fontStyle: 'italic', textAlign: 'center' },
     row: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 12 },
-    levelRow: { flexDirection: 'row', justifyContent: 'center', gap: 2, paddingHorizontal: 6, marginBottom: 8 },
+    levelRow: { flexDirection: 'row', justifyContent: 'center', gap: 2, paddingHorizontal: 6, marginBottom: 12 },
     levelBtn: { width: 26, height: 26, borderRadius: 13, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: colors.border, backgroundColor: colors.background },
     levelBtnActive: { backgroundColor: colors.accent, borderColor: colors.accent },
     levelText: { color: colors.textSecondary, fontSize: 12 },
     levelTextActive: { color: colors.background, fontWeight: '600' },
     dBlock: { marginBottom: 12 },
-    dLabel: { color: colors.text, fontWeight: '500', marginBottom: 4 },
-    input: { backgroundColor: colors.background, borderRadius: 12, padding: 14, color: colors.text, borderWidth: 1, borderColor: colors.border, fontSize: 15, marginBottom: 12 },
+    dLabel: { color: colors.text, fontWeight: '500', marginBottom: 4, textAlign: 'center' },
+    input: { backgroundColor: colors.background, borderRadius: 12, padding: 14, color: colors.text, borderWidth: 1, borderColor: colors.border, fontSize: 15, marginBottom: 12, textAlignVertical: 'top' },
     prevBox: { borderRadius: 8, padding: 8, marginBottom: 12 },
     prevItem: { flexDirection: 'row', marginBottom: 4 },
     prevLabel: { fontWeight: '600', marginRight: 6 },
-    delta: { color: colors.text, fontSize: 17, fontWeight: '600', marginTop: 8, marginBottom: 8 },
-    reflection: { color: colors.textSecondary, fontSize: 14, marginTop: Spacing.sm, fontStyle: 'italic', marginBottom: Spacing.sm },
+    delta: { color: colors.text, fontSize: 17, fontWeight: '600', marginTop: 8, marginBottom: 8, textAlign: 'center' },
+    reflection: { color: colors.textSecondary, fontSize: 14, marginTop: Spacing.sm, fontStyle: 'italic', marginBottom: Spacing.sm, textAlign: 'center' },
     introCard: { backgroundColor: colors.surface, borderRadius: 16, padding: Spacing.md, marginBottom: Spacing.md, borderWidth: 1, borderColor: colors.border },
-    introTitle: { color: colors.text, fontSize: 20, fontWeight: '600', marginBottom: 12, textAlign: 'center' },
-    introText: { color: colors.textSecondary, fontSize: 15, lineHeight: 22, marginBottom: 12 },
+    introTitle: { color: colors.text, fontSize: 18, fontWeight: '600', marginBottom: 16, textAlign: 'center' },
+    introText: { color: colors.textSecondary, fontSize: 15, lineHeight: 22, marginBottom: 16, textAlign: 'center' },
   });
 
-  // Экран-введение
   if (showIntro) {
     return (
       <Background>
         <SafeAreaView style={styles.container}>
           <ScrollView contentContainerStyle={styles.scroll}>
-            <Text style={[Fonts.title, { color: colors.text, textAlign: 'center' }]}>АБЦ анализ</Text>
+            <Text style={[Fonts.title, { color: colors.text, textAlign: 'center', marginTop: 20, marginBottom: 28 }]}>АБЦ анализ</Text>
             <View style={styles.introCard}>
               <Text style={styles.introTitle}>Что такое АБЦ анализ?</Text>
               <Text style={styles.introText}>
@@ -127,7 +140,7 @@ export default function InventoryScreen() {
                 • <Text style={{ fontWeight: '600', color: colors.accent }}>Убеждение</Text> — глубинное правило или долженствование.{'\n'}
                 • <Text style={{ fontWeight: '600', color: colors.accent }}>Проверка</Text> — сбор доказательств за и против убеждения.{'\n'}
                 • <Text style={{ fontWeight: '600', color: colors.accent }}>Новый взгляд</Text> — замена жёсткой формулировки на гибкую.{'\n\n'}
-                После заполнения вы оцените уровень эмоции до и после — это покажет, насколько анализ помог снизить накал.
+                После заполнения Вы оцените уровень эмоции до и после — это покажет, насколько анализ помог снизить накал.
               </Text>
               <StyledButton title="Понятно, приступим" onPress={() => setShowIntro(false)} />
             </View>
@@ -137,7 +150,6 @@ export default function InventoryScreen() {
     );
   }
 
-  // Завершено
   if (done) {
     const delta = (emotionBefore ?? 0) - (emotionAfter ?? 0);
     let comparisonText = `Было ${emotionBefore ?? 0} → стало ${emotionAfter ?? 0}. `;
@@ -148,7 +160,7 @@ export default function InventoryScreen() {
       <Background>
         <SafeAreaView style={styles.container}>
           <ScrollView contentContainerStyle={styles.scroll}>
-            <Text style={[Fonts.title, { color: colors.text, textAlign: 'center' }]}>АБЦ анализ завершён</Text>
+            <Text style={[Fonts.title, { color: colors.text, textAlign: 'center', marginTop: 20, marginBottom: 28 }]}>АБЦ анализ завершён</Text>
             <View style={styles.card}>
               {STEP_LABELS.map((label, i) => (
                 <View key={i} style={{ marginBottom: 8 }}>
@@ -160,7 +172,7 @@ export default function InventoryScreen() {
               <Text style={styles.reflection}>
                 Вы заменили жёсткое убеждение на гибкое. Чтобы закрепить его, в течение дня при появлении старой мысли сознательно напоминайте себе новый ответ и делайте одно микро‑действие, подтверждающее его.
               </Text>
-              <Text style={{ color: colors.textSecondary, marginTop: 8 }}>Сегодня выполнено {sessionCount} раз(а)</Text>
+              <Text style={{ color: colors.textSecondary, marginTop: 8, textAlign: 'center' }}>Сегодня выполнено {sessionCount} раз(а)</Text>
               <View style={styles.row}>
                 <StyledButton title="Пройти заново" onPress={reset} variant="secondary" />
               </View>
@@ -171,13 +183,12 @@ export default function InventoryScreen() {
     );
   }
 
-  // Основная форма
   return (
     <Background>
       <SafeAreaView style={styles.container}>
         <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={true}>
-          <Text style={[Fonts.title, { color: colors.text, textAlign: 'center' }]}>АБЦ анализ</Text>
-          <Text style={[Fonts.subtitle, { color: colors.textSecondary, textAlign: 'center', marginBottom: Spacing.md }]}>
+          <Text style={[Fonts.title, { color: colors.text, textAlign: 'center', marginTop: 20, marginBottom: 28 }]}>АБЦ анализ</Text>
+          <Text style={[Fonts.subtitle, { color: colors.textSecondary, textAlign: 'center', marginBottom: 28 }]}>
             Шесть шагов, чтобы отделить факты от эмоций, найти и оспорить иррациональные убеждения и прийти к взвешенному взгляду.
           </Text>
           <ProgressBar step={step === 7 ? TOTAL_STEPS : step} total={TOTAL_STEPS} />
@@ -197,9 +208,9 @@ export default function InventoryScreen() {
               <Text style={styles.stepTitle}>{step}. {STEP_LABELS[step - 1]}</Text>
 
               {step === 1 && <Text style={styles.hint}>Запишите один конкретный факт, который произошёл. Без оценок, только то, что можно подтвердить.</Text>}
-              {step === 2 && <Text style={styles.hint}>Какие слова пронеслись у вас в голове в тот момент? Запишите их дословно.</Text>}
-              {step === 3 && <Text style={styles.hint}>Что вы почувствовали и как себя повели? Оцените силу эмоции (0–10).</Text>}
-              {step === 4 && <Text style={styles.hint}>Какое глубинное правило или долженствование скрывается за этой мыслью? (Например: «Я должен всё контролировать»)</Text>}
+              {step === 2 && <Text style={styles.hint}>Какие слова пронеслись у Вас в голове в тот момент? Запишите их дословно.</Text>}
+              {step === 3 && <Text style={styles.hint}>Что Вы почувствовали и как себя повели? Оцените силу эмоции (0–10).</Text>}
+              {step === 4 && <Text style={styles.hint}>Какое глубинное правило или долженствование скрывается за этой мыслью? (Например: «Я должен всё контролировать», «Я должен быть идеальным»)</Text>}
 
               {step === 5 && (
                 <>
@@ -231,7 +242,7 @@ export default function InventoryScreen() {
               {step === 6 && (
                 <>
                   <Text style={styles.hint}>
-                    В шаге 4 вы нашли убеждение: «{answers[3] || '...'}».{'\n'}
+                    В шаге 4 Вы нашли убеждение: «{answers[3] || '...'}».{'\n'}
                     Теперь замените в нём жёсткие формулировки на гибкие.{'\n'}
                     Например: «Я должен» → «Мне бы хотелось», «Это катастрофа» → «Это неприятность, но я справлюсь».
                   </Text>

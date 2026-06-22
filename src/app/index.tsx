@@ -152,21 +152,26 @@ export default function CompassScreen() {
 
   if (step === 'welcome') return (
     <Background><SafeAreaView style={styles.safe}><ScrollView contentContainerStyle={styles.scroll}>
-      <View style={styles.iconContainer}><MaterialCommunityIcons name="lighthouse" size={80} color={colors.accent} /></View>
-      <Text style={[Fonts.title, { color: colors.text, textAlign: 'center' }]}>Маяк</Text>
-      <Text style={[Fonts.subtitle, { color: colors.textSecondary, textAlign: 'center', marginBottom: Spacing.md }]}>Твой навигатор по техникам самопомощи</Text>
+      <View style={styles.iconContainer}><MaterialCommunityIcons name="lighthouse" size={72} color={colors.accent} /></View>
+      <Text style={[Fonts.title, { color: colors.text, textAlign: 'center', marginBottom: 16 }]}>Маяк</Text>
+      <Text style={[Fonts.subtitle, { color: colors.textSecondary, textAlign: 'center', marginBottom: 24 }]}>Ваш навигатор по техникам самопомощи</Text>
       <View style={styles.card}>
-        <Text style={styles.welcomeTitle}>Что здесь происходит?</Text><Text style={styles.welcomeText}>«Маяк» — это безопасный инструмент, который поможет тебе понять, что ты чувствуешь прямо сейчас, и подобрать подходящую технику самопомощи.</Text>
+        <Text style={styles.welcomeTitle}>Что здесь происходит?</Text>
+        <Text style={styles.welcomeText}>«Маяк» — это безопасный инструмент, который поможет Вам понять, что Вы чувствуете прямо сейчас, и подобрать подходящую технику самопомощи.</Text>
         <Text style={styles.welcomeTitle}>Два пути:</Text>
         <View style={styles.row}>
-          <TouchableOpacity style={[styles.methodBtn, { backgroundColor: colors.surface, borderColor: colors.border }]} onPress={() => { setBodyMode(true); setStep('body'); }} activeOpacity={0.7}>
-            <MaterialCommunityIcons name="human" size={32} color={colors.accent} /><Text style={[styles.methodTitle, { color: colors.text }]}>Боди-скан</Text><Text style={[styles.methodDesc, { color: colors.textSecondary }]}>Оценить ощущения в теле и позывы → получить техники</Text>
+          <TouchableOpacity style={styles.methodBtn} onPress={() => { setBodyMode(true); setStep('body'); }} activeOpacity={0.7}>
+            <MaterialCommunityIcons name="human" size={28} color={colors.accent} />
+            <Text style={styles.methodTitle}>Боди-скан</Text>
+            <Text style={styles.methodDesc}>Оценить ощущения и позывы</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={[styles.methodBtn, { backgroundColor: colors.surface, borderColor: colors.border }]} onPress={() => { setBodyMode(false); setStep('emotions'); }} activeOpacity={0.7}>
-            <MaterialCommunityIcons name="speedometer" size={32} color={colors.accent} /><Text style={[styles.methodTitle, { color: colors.text }]}>Шкала</Text><Text style={[styles.methodDesc, { color: colors.textSecondary }]}>Отметить эмоции и выбрать интенсивность → получить техники</Text>
+          <TouchableOpacity style={styles.methodBtn} onPress={() => { setBodyMode(false); setStep('emotions'); }} activeOpacity={0.7}>
+            <MaterialCommunityIcons name="speedometer" size={28} color={colors.accent} />
+            <Text style={styles.methodTitle}>Шкала</Text>
+            <Text style={styles.methodDesc}>Выбрать эмоции и интенсивность</Text>
           </TouchableOpacity>
         </View>
-        <Text style={styles.welcomeText}>После оценки вы получите список рекомендуемых техник, которые можно сразу открыть.</Text>
+        <Text style={[styles.welcomeText, { fontSize: 13, marginTop: 8 }]}>Боди-скан подберёт техники на основе телесных ощущений, шкала — на основе эмоций и их интенсивности.</Text>
       </View>
     </ScrollView></SafeAreaView></Background>
   );
@@ -174,55 +179,55 @@ export default function CompassScreen() {
   return (
     <Background><SafeAreaView style={styles.safe}><ScrollView contentContainerStyle={styles.scroll}>
       <View style={styles.iconContainer}><MaterialCommunityIcons name="lighthouse" size={64} color={colors.accent} /></View>
-      <Text style={[Fonts.title, { color: colors.text, textAlign: 'center' }]}>Маяк</Text>
-      <Text style={[Fonts.subtitle, { color: colors.textSecondary, textAlign: 'center', marginBottom: Spacing.md }]}>Оцените своё состояние, чтобы подобрать подходящую технику</Text>
+      <Text style={[Fonts.title, { color: colors.text, textAlign: 'center', marginBottom: 16 }]}>Маяк</Text>
+      <Text style={[Fonts.subtitle, { color: colors.textSecondary, textAlign: 'center', marginBottom: 24 }]}>Оцените своё состояние</Text>
 
       {step === 'body' && (<View style={styles.card}>
-        <Text style={styles.invite}>Пройдите вниманием по телу. Что вы замечаете прямо сейчас?</Text>
+        <Text style={styles.invite}>Пройдите вниманием по телу. Что Вы замечаете прямо сейчас?</Text>
         {SYMPTOMS.map((s, i) => { const selected = selectedSymptoms.includes(i); return (<TouchableOpacity key={i} style={[styles.checkRow, selected && styles.checkRowActive]} onPress={() => toggleSymptom(i)} activeOpacity={0.7}><MaterialCommunityIcons name={selected ? 'checkbox-marked' : 'checkbox-blank-outline'} size={20} color={selected ? colors.accent : colors.textSecondary} /><Text style={[styles.checkLabel, { color: selected ? colors.text : colors.textSecondary }]}>{s}</Text></TouchableOpacity>); })}
-        <View style={styles.blockDivider} /><Text style={styles.invite}>💪 Что вам хочется сделать под влиянием этих чувств?</Text>
+        <View style={styles.blockDivider} /><Text style={styles.invite}>💪 Что Вам хочется сделать под влиянием этих чувств?</Text>
         {URGES.map((u, i) => { const selected = selectedUrges.includes(i); return (<TouchableOpacity key={i} style={[styles.checkRow, selected && styles.checkRowActive]} onPress={() => toggleUrge(i)} activeOpacity={0.7}><MaterialCommunityIcons name={selected ? 'checkbox-marked' : 'checkbox-blank-outline'} size={20} color={selected ? colors.accent : colors.textSecondary} /><Text style={[styles.checkLabel, { color: selected ? colors.text : colors.textSecondary }]}>{u}</Text></TouchableOpacity>); })}
-        <View style={styles.buttonGroup}><StyledButton title="Получить техники" onPress={handleBodyContinue} disabled={!canBodyContinue} /><TouchableOpacity onPress={() => reset()} style={styles.skipBtn}><Text style={[styles.skipText, { color: colors.textSecondary }]}>Вернуться к выбору</Text></TouchableOpacity></View>
+        <View style={styles.buttonGroup}><StyledButton title="Показать техники →" onPress={handleBodyContinue} disabled={!canBodyContinue} /><TouchableOpacity onPress={() => reset()} style={styles.skipBtn}><Text style={styles.skipText}>Вернуться к выбору</Text></TouchableOpacity></View>
       </View>)}
 
       {step === 'emotions' && (<View style={styles.card}>
         <Text style={styles.invite}>🎭 Какие эмоции присутствуют? Можно выбрать несколько.</Text>
         {EMOTIONS.map((em, i) => { const selected = selectedEmotions.includes(i); return (<TouchableOpacity key={i} style={[styles.checkRow, selected && styles.checkRowActive]} onPress={() => toggleEmotion(i)} activeOpacity={0.7}><MaterialCommunityIcons name={selected ? 'checkbox-marked' : 'checkbox-blank-outline'} size={20} color={selected ? colors.accent : colors.textSecondary} /><Text style={[styles.checkLabel, { color: selected ? colors.text : colors.textSecondary }]}>{em.icon}  {em.label}</Text></TouchableOpacity>); })}
-        <View style={styles.buttonGroup}><StyledButton title="Продолжить →" onPress={() => setStep('intensity')} disabled={!canEmotionContinue} /><TouchableOpacity onPress={() => reset()} style={styles.skipBtn}><Text style={[styles.skipText, { color: colors.textSecondary }]}>Вернуться к выбору</Text></TouchableOpacity></View>
+        <View style={styles.buttonGroup}><StyledButton title="Продолжить →" onPress={() => setStep('intensity')} disabled={!canEmotionContinue} /><TouchableOpacity onPress={() => reset()} style={styles.skipBtn}><Text style={styles.skipText}>Вернуться к выбору</Text></TouchableOpacity></View>
       </View>)}
 
       {step === 'intensity' && (<View style={styles.card}>
-        <Text style={[styles.cardTitle, { color: colors.text }]}>📊 Насколько сильна эмоция сейчас?</Text>
-        {chosenEmotions.length > 0 && <Text style={[styles.contextHint, { color: colors.textSecondary }]}>Вы отметили: {chosenEmotions.join(', ').toLowerCase()}.</Text>}
-        <Text style={styles.hint}>0 — полное расслабление, 100 — максимальный уровень из вашего опыта</Text>
+        <Text style={styles.cardTitle}>📊 Насколько сильна эмоция сейчас?</Text>
+        {chosenEmotions.length > 0 && <Text style={styles.contextHint}>Вы отметили: {chosenEmotions.join(', ').toLowerCase()}.</Text>}
+        <Text style={styles.hint}>0 — полное расслабление, 100 — максимальный уровень из Вашего опыта</Text>
         <View style={styles.scaleContainer}>{QUICK_STEPS.map(val => (<TouchableOpacity key={val} style={[styles.scaleBtn, { backgroundColor: intensity === val ? colors.accent : colors.surface, borderColor: colors.border }]} onPress={() => { setIntensity(val); setStep('result'); }}><Text style={[styles.scaleBtnText, { color: intensity === val ? colors.background : colors.text }]}>{val}</Text></TouchableOpacity>))}</View>
         <StyledButton title="← Назад к эмоциям" onPress={() => setStep('emotions')} variant="secondary" />
       </View>)}
 
       {step === 'result' && (
         <View style={[styles.card, levelInfo ? { borderLeftColor: levelInfo.color, borderLeftWidth: 4 } : {}]}>
-          {!positiveOnly && levelInfo && (
+          {levelInfo && (
             <>
               <View style={styles.resultHeader}>
                 <MaterialCommunityIcons name={levelInfo.icon} size={48} color={levelInfo.color} />
                 <View style={{ marginLeft: 12, flex: 1 }}>
                   <Text style={[styles.resultTitle, { color: levelInfo.color }]}>{levelInfo.title}</Text>
-                  <Text style={[styles.resultSubtitle, { color: colors.textSecondary }]}>{levelInfo.subtitle}</Text>
+                  <Text style={styles.resultSubtitle}>{levelInfo.subtitle}</Text>
                 </View>
               </View>
-              <Text style={[styles.resultDesc, { color: colors.text }]}>{levelInfo.desc}</Text>
+              <Text style={styles.resultDesc}>{levelInfo.desc}</Text>
             </>
           )}
           {positiveOnly ? (
             <View style={{ marginVertical: 12 }}>
-              <Text style={[styles.positiveMessage, { color: colors.accent }]}>Похоже, вы чувствуете радость или любовь — это прекрасно! Сейчас вам не нужны техники, просто наслаждайтесь. Если захотите закрепить это состояние, попробуйте «Накопление положительных эмоций».</Text>
-              <TouchableOpacity style={styles.techBtn} onPress={() => router.push({ pathname: '/techniques', params: { open: 'positive' } })} activeOpacity={0.7}><Text style={[styles.techBtnText, { color: colors.text }]}>Накопление положительных эмоций</Text><MaterialCommunityIcons name="arrow-right" size={20} color={colors.textSecondary} /></TouchableOpacity>
+              <Text style={styles.positiveMessage}>Похоже, Вы чувствуете радость или любовь — это прекрасно! Сейчас Вам не нужны специальные техники, но можно закрепить состояние.</Text>
+              <TouchableOpacity style={styles.techBtn} onPress={() => router.push({ pathname: '/techniques', params: { open: 'positive' } })} activeOpacity={0.7}><Text style={styles.techBtnText}>Накопление положительных эмоций</Text><MaterialCommunityIcons name="arrow-right" size={20} color={colors.textSecondary} /></TouchableOpacity>
             </View>
           ) : (
             recommended.length > 0 && (
               <View style={{ marginVertical: 12 }}>
-                <Text style={[styles.recTitle, { color: colors.accent }]}>🔧 Рекомендуемые техники:</Text>
-                {recommended.map((tech, i) => { const techId = TECHNIQUE_ID_MAP[tech] || ''; return (<TouchableOpacity key={i} style={styles.techBtn} onPress={() => router.push({ pathname: '/techniques', params: { open: techId } })} activeOpacity={0.7}><Text style={[styles.techBtnText, { color: colors.text }]}>{tech}</Text><MaterialCommunityIcons name="arrow-right" size={20} color={colors.textSecondary} /></TouchableOpacity>); })}
+                <Text style={styles.recTitle}>🔧 Рекомендуемые техники:</Text>
+                {recommended.map((tech, i) => { const techId = TECHNIQUE_ID_MAP[tech] || ''; return (<TouchableOpacity key={i} style={styles.techBtn} onPress={() => router.push({ pathname: '/techniques', params: { open: techId } })} activeOpacity={0.7}><Text style={styles.techBtnText}>{tech}</Text><MaterialCommunityIcons name="arrow-right" size={20} color={colors.textSecondary} /></TouchableOpacity>); })}
               </View>
             )
           )}
@@ -234,29 +239,31 @@ export default function CompassScreen() {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1 }, scroll: { padding: Spacing.md }, iconContainer: { alignItems: 'center', marginBottom: 8 },
-  card: { backgroundColor: 'rgba(19,30,43,0.8)', borderRadius: 16, padding: Spacing.md, marginTop: Spacing.md, borderWidth: 1, borderColor: '#1E2D3A' },
-  cardTitle: { fontSize: 20, fontWeight: '600', marginBottom: 8, textAlign: 'center', color: '#D0D9E2' },
-  invite: { fontSize: 15, color: '#C9A84C', marginBottom: 12, lineHeight: 22, textAlign: 'center', fontWeight: '500' },
-  hint: { fontSize: 13, textAlign: 'center', marginBottom: 12, fontStyle: 'italic', color: '#7B8FA1' },
-  contextHint: { fontSize: 13, textAlign: 'center', marginBottom: 8, fontStyle: 'italic', lineHeight: 18, color: '#7B8FA1' },
+  safe: { flex: 1 }, scroll: { paddingHorizontal: Spacing.md, paddingBottom: 40 },
+  iconContainer: { alignItems: 'center', marginBottom: 16 },
+  card: { backgroundColor: 'rgba(19,30,43,0.8)', borderRadius: 16, padding: Spacing.md, marginBottom: Spacing.md, borderWidth: 1, borderColor: '#1E2D3A' },
+  cardTitle: { fontSize: 18, fontWeight: '600', marginBottom: 16, textAlign: 'center', color: '#D0D9E2' },
+  invite: { fontSize: 15, color: '#C9A84C', marginBottom: 16, lineHeight: 22, textAlign: 'center', fontWeight: '500' },
+  hint: { fontSize: 13, textAlign: 'center', marginBottom: 16, fontStyle: 'italic', color: '#7B8FA1' },
+  contextHint: { fontSize: 13, textAlign: 'center', marginBottom: 12, fontStyle: 'italic', lineHeight: 18, color: '#7B8FA1' },
   blockDivider: { height: 1, backgroundColor: '#1E2D3A', marginVertical: Spacing.md },
   checkRow: { flexDirection: 'row', alignItems: 'center', paddingVertical: 6, paddingHorizontal: 6, gap: 8, borderRadius: 10, marginBottom: 2 },
-  checkRowActive: { backgroundColor: 'rgba(201,168,76,0.15)' }, checkLabel: { fontSize: 14, flex: 1 },
-  buttonGroup: { marginTop: Spacing.md }, skipBtn: { alignItems: 'center', marginTop: 10 }, skipText: { fontSize: 14 },
-  scaleContainer: { flexDirection: 'row', justifyContent: 'center', gap: 2, paddingHorizontal: 6, marginBottom: 12 },
+  checkRowActive: { backgroundColor: 'rgba(201,168,76,0.15)' }, checkLabel: { fontSize: 14, flex: 1, textAlign: 'left' },
+  buttonGroup: { marginTop: Spacing.md, alignItems: 'center' }, skipBtn: { alignItems: 'center', marginTop: 10 }, skipText: { fontSize: 14, color: '#7B8FA1' },
+  scaleContainer: { flexDirection: 'row', justifyContent: 'center', gap: 2, paddingHorizontal: 6, marginBottom: 16 },
   scaleBtn: { width: 26, height: 26, borderRadius: 13, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
   scaleBtnText: { fontSize: 12, fontWeight: '600' },
-  resultHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
-  resultTitle: { fontSize: 22, fontWeight: '700' }, resultSubtitle: { fontSize: 14, marginTop: 2, color: '#7B8FA1' },
-  resultDesc: { fontSize: 15, lineHeight: 22, marginBottom: 12, color: '#D0D9E2' },
-  recTitle: { fontSize: 15, fontWeight: '600', marginBottom: 8, color: '#C9A84C' },
-  techBtn: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 10, paddingHorizontal: 12, backgroundColor: '#131E2B', borderRadius: 8, borderWidth: 1, borderColor: '#1E2D3A', marginBottom: 6 },
-  techBtnText: { fontSize: 14, fontWeight: '500' },
-  welcomeTitle: { fontSize: 20, fontWeight: '700', color: '#C9A84C', marginBottom: 8, marginTop: 16 },
-  welcomeText: { fontSize: 15, lineHeight: 22, color: '#D0D9E2', marginBottom: 12 },
-  row: { flexDirection: 'row', justifyContent: 'space-around', gap: 12, marginBottom: 12 },
-  methodBtn: { flex: 1, borderRadius: 12, borderWidth: 1, padding: 16, alignItems: 'center', justifyContent: 'center', gap: 6 },
-  methodTitle: { fontSize: 15, fontWeight: '600', marginTop: 4 }, methodDesc: { fontSize: 12 },
-  positiveMessage: { fontSize: 15, lineHeight: 22, marginBottom: 12 },
+  resultHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 16 },
+  resultTitle: { fontSize: 20, fontWeight: '700' }, resultSubtitle: { fontSize: 14, marginTop: 4, color: '#7B8FA1' },
+  resultDesc: { fontSize: 15, lineHeight: 22, marginBottom: 16, color: '#D0D9E2', textAlign: 'center' },
+  recTitle: { fontSize: 15, fontWeight: '600', marginBottom: 12, color: '#C9A84C', textAlign: 'center' },
+  techBtn: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 10, paddingHorizontal: 12, backgroundColor: '#131E2B', borderRadius: 8, borderWidth: 1, borderColor: '#1E2D3A', marginBottom: 8 },
+  techBtnText: { fontSize: 14, fontWeight: '500', color: '#D0D9E2' },
+  welcomeTitle: { fontSize: 18, fontWeight: '700', color: '#C9A84C', marginBottom: 12, marginTop: 16, textAlign: 'center' },
+  welcomeText: { fontSize: 15, lineHeight: 22, color: '#D0D9E2', marginBottom: 16, textAlign: 'center' },
+  row: { flexDirection: 'row', justifyContent: 'space-around', gap: 12, marginBottom: 0 },
+  methodBtn: { flex: 1, borderRadius: 12, borderWidth: 1, borderColor: '#1E2D3A', backgroundColor: '#1A2A3A', padding: 16, alignItems: 'center', justifyContent: 'center', gap: 6, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.25, shadowRadius: 4, elevation: 5 },
+  methodTitle: { fontSize: 14, fontWeight: '600', color: '#D0D9E2', textAlign: 'center' },
+  methodDesc: { fontSize: 12, color: '#7B8FA1', textAlign: 'center' },
+  positiveMessage: { fontSize: 15, lineHeight: 22, marginBottom: 16, color: '#C9A84C', textAlign: 'center' },
 });
